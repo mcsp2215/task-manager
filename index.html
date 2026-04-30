@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>pendientes</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231A1A18'/><line x1='9' y1='16' x2='14' y2='21' stroke='%23F0F0EA' stroke-width='2.5' stroke-linecap='round'/><line x1='14' y1='21' x2='23' y2='11' stroke='%23F0F0EA' stroke-width='2.5' stroke-linecap='round'/></svg>">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -124,6 +125,14 @@ h1 {
 .gh-c6 { border-left-color: var(--c6); background: var(--c6bg); }
 
 .group-toggle { font-size: 9px; color: var(--text-muted); width: 12px; flex-shrink: 0; }
+.drag-handle {
+  font-size: 13px; color: var(--text-muted); cursor: grab; padding: 0 2px;
+  opacity: 0; flex-shrink: 0; line-height: 1; user-select: none;
+}
+.group-header:hover .drag-handle { opacity: 1; }
+.drag-handle:active { cursor: grabbing; }
+.group.drag-over { outline: 2px solid var(--border-mid); outline-offset: 2px; }
+.group.dragging { opacity: 0.4; }
 .group-name { font-size: 14px; font-weight: 500; flex: 1; color: var(--text); letter-spacing: 0.005em; }
 .group-name-input {
   font-size: 14px; font-weight: 500; flex: 1; border: none;
@@ -139,9 +148,14 @@ h1 {
 @media (prefers-color-scheme: dark) {
   .group-count { background: rgba(255,255,255,0.07); }
 }
-.group-del { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px 4px; border-radius: 4px; opacity: 0; }
+.group-del {
+  background: none; border: 0.5px solid transparent; cursor: pointer;
+  color: var(--text-muted); font-size: 11px; padding: 3px 7px;
+  border-radius: 4px; opacity: 0; font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+}
 .group-header:hover .group-del { opacity: 1; }
-.group-del:hover { color: var(--text); }
+.group-del:hover { color: var(--p-high); border-color: rgba(216,64,64,0.25); background: rgba(216,64,64,0.06); }
 
 /* ITEMS */
 .items-list { padding: 2px 16px 10px; }
@@ -192,6 +206,26 @@ h1 {
 }
 .item-row:hover .item-del { opacity: 1; }
 .item-del:hover { color: var(--text); }
+
+.item-note-btn {
+  background: none; border: none; cursor: pointer; color: var(--text-muted);
+  font-size: 10px; padding: 1px 4px; margin-top: 3px; opacity: 0;
+  font-family: 'DM Mono', monospace; border-radius: 3px;
+  border: 0.5px solid transparent;
+}
+.item-row:hover .item-note-btn { opacity: 1; }
+.item-note-btn:hover { color: var(--text-mid); border-color: var(--border-mid); }
+.item-note-btn.has-note { opacity: 1; color: var(--text-mid); border-color: var(--border-mid); }
+
+.item-note-area { padding: 0 0 8px 37px; }
+.item-note-textarea {
+  width: 100%; font-size: 12.5px; color: var(--text-mid); line-height: 1.6;
+  border: none; border-left: 2px solid var(--border-mid);
+  background: transparent; outline: none; resize: none;
+  font-family: 'DM Sans', sans-serif; padding: 3px 0 3px 10px;
+}
+.item-note-textarea::placeholder { color: var(--text-muted); }
+.item-note-textarea:focus { border-left-color: var(--text-muted); }
 
 /* ADD ROW */
 .add-row {
@@ -375,8 +409,11 @@ function render() {
     const np = newPrio[g.id] || 'low';
     const wrap = document.createElement('div');
     wrap.className = 'group';
+    wrap.setAttribute('draggable', 'true');
+    wrap.dataset.gid = g.id;
     wrap.innerHTML = `
       <div class="group-header gh-${c}" onclick="toggleGroup('${g.id}')">
+        <span class="drag-handle" onmousedown="event.stopPropagation()" title="arrastrar">⠿</span>
         <span class="group-toggle">${g.collapsed?'▶':'▼'}</span>
         <span class="group-name" id="gn-${g.id}" ondblclick="editName('${g.id}',event)">${g.name}</span>
         <span class="group-count">${g.items.length}</span>
@@ -386,8 +423,11 @@ function render() {
       const list = document.createElement('div');
       list.className = 'items-list';
       g.items.forEach(item => {
+        const itemWrap = document.createElement('div');
+
         const row = document.createElement('div');
         row.className = 'item-row';
+        const hasNote = item.note && item.note.trim();
         row.innerHTML = `
           <input type="checkbox" class="item-check" onchange="completeItem('${g.id}','${item.id}')">
           <div class="prio-wrap">
@@ -395,8 +435,18 @@ function render() {
             <span class="prio-tip">prioridad ${plabel(item.priority)} — clic para cambiar</span>
           </div>
           <span class="item-text" ondblclick="editItem('${g.id}','${item.id}',this)">${item.text}</span>
+          <button class="item-note-btn ${hasNote?'has-note':''}" id="notebtn-${item.id}" onclick="toggleNote('${g.id}','${item.id}')" title="notas">✎</button>
           <button class="item-del" onclick="delItem('${g.id}','${item.id}')">✕</button>`;
-        list.appendChild(row);
+        itemWrap.appendChild(row);
+
+        const noteArea = document.createElement('div');
+        noteArea.className = 'item-note-area';
+        noteArea.id = 'notearea-' + item.id;
+        noteArea.style.display = (item.noteOpen || hasNote) ? 'block' : 'none';
+        noteArea.innerHTML = `<textarea class="item-note-textarea" rows="2" placeholder="ideas, contexto, links..." onblur="saveNote('${g.id}','${item.id}',this.value)" oninput="autoResize(this)">${item.note||''}</textarea>`;
+        itemWrap.appendChild(noteArea);
+
+        list.appendChild(itemWrap);
       });
       const addRow = document.createElement('div');
       addRow.className = 'add-row';
@@ -413,9 +463,43 @@ function render() {
     cont.appendChild(wrap);
   });
   renderLog();
+  initDrag();
 }
 
-function renderLog() {
+function initDrag() {
+  const cont = document.getElementById('groups-container');
+  let dragSrc = null;
+  cont.querySelectorAll('.group').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragSrc = el;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      cont.querySelectorAll('.group').forEach(g => g.classList.remove('drag-over'));
+    });
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if(el !== dragSrc) {
+        cont.querySelectorAll('.group').forEach(g => g.classList.remove('drag-over'));
+        el.classList.add('drag-over');
+      }
+    });
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      if(!dragSrc || dragSrc === el) return;
+      const ids = [...cont.querySelectorAll('.group')].map(x => x.dataset.gid);
+      const fromIdx = state.groups.findIndex(g => g.id === dragSrc.dataset.gid);
+      const toIdx = state.groups.findIndex(g => g.id === el.dataset.gid);
+      if(fromIdx === -1 || toIdx === -1) return;
+      const [moved] = state.groups.splice(fromIdx, 1);
+      state.groups.splice(toIdx, 0, moved);
+      save(); render();
+    });
+  });
+}
   document.getElementById('log-count').textContent = state.log.length;
   const cont = document.getElementById('log-container');
   cont.innerHTML = '';
@@ -513,6 +597,29 @@ function restore(lid) {
   else state.groups.push({id:uid(),name:e.groupName,color:COLORS[state.groups.length%COLORS.length],collapsed:false,items:[{id:uid(),text:e.text,priority:e.priority}]});
   state.log.splice(idx,1);
   save(); render();
+}
+
+function toggleNote(gid, iid) {
+  const g=state.groups.find(x=>x.id===gid); if(!g) return;
+  const item=g.items.find(x=>x.id===iid); if(!item) return;
+  item.noteOpen = !item.noteOpen;
+  const area = document.getElementById('notearea-'+iid);
+  if(area) {
+    area.style.display = item.noteOpen ? 'block' : 'none';
+    if(item.noteOpen) { const ta=area.querySelector('textarea'); if(ta){ta.focus();autoResize(ta);} }
+  }
+}
+function saveNote(gid, iid, val) {
+  const g=state.groups.find(x=>x.id===gid); if(!g) return;
+  const item=g.items.find(x=>x.id===iid); if(!item) return;
+  item.note = val;
+  const btn = document.getElementById('notebtn-'+iid);
+  if(btn) btn.classList.toggle('has-note', !!(val&&val.trim()));
+  save();
+}
+function autoResize(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
 }
 
 function openModal() {
