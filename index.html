@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>pendientes</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F5F4F0;
+  --surface: #FFFFFF;
+  --border: rgba(0,0,0,0.08);
+  --border-mid: rgba(0,0,0,0.14);
+  --text: #1A1A18;
+  --text-mid: #5A5A56;
+  --text-muted: #9A9A94;
+  --radius: 12px;
+  --radius-sm: 7px;
+  --p-high: #D84040;
+  --p-mid: #D48B1A;
+  --p-low: #CACAC4;
+  --c0: #6B63D4; --c0bg: #EEEDFD;
+  --c1: #1A9E78; --c1bg: #E2F5EE;
+  --c2: #2E85D4; --c2bg: #E6F1FB;
+  --c3: #C85430; --c3bg: #FAF0EC;
+  --c4: #B87818; --c4bg: #FAF0DA;
+  --c5: #5E9820; --c5bg: #EEF5E2;
+  --c6: #C24A78; --c6bg: #FCEAF2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161614;
+    --surface: #1E1E1C;
+    --border: rgba(255,255,255,0.08);
+    --border-mid: rgba(255,255,255,0.14);
+    --text: #F0F0EA;
+    --text-mid: #A0A09A;
+    --text-muted: #606058;
+    --p-low: #48484A;
+    --c0bg: #2A2848; --c1bg: #0E2E22; --c2bg: #0E2238;
+    --c3bg: #2E1A12; --c4bg: #2E2010; --c5bg: #1A2610; --c6bg: #2E1222;
+  }
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+}
+
+.app {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.topbar-left { display: flex; align-items: baseline; gap: 12px; }
+
+h1 {
+  font-family: 'DM Mono', monospace;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.total-badge {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.btn-new-group {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text-mid);
+  background: var(--surface);
+  border: 0.5px solid var(--border-mid);
+  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.btn-new-group:hover { background: var(--bg); }
+
+/* GROUP */
+.group {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  user-select: none;
+  border-left: 3px solid transparent;
+}
+.group-header:hover { filter: brightness(0.97); }
+
+.gh-c0 { border-left-color: var(--c0); background: var(--c0bg); }
+.gh-c1 { border-left-color: var(--c1); background: var(--c1bg); }
+.gh-c2 { border-left-color: var(--c2); background: var(--c2bg); }
+.gh-c3 { border-left-color: var(--c3); background: var(--c3bg); }
+.gh-c4 { border-left-color: var(--c4); background: var(--c4bg); }
+.gh-c5 { border-left-color: var(--c5); background: var(--c5bg); }
+.gh-c6 { border-left-color: var(--c6); background: var(--c6bg); }
+
+.group-toggle { font-size: 9px; color: var(--text-muted); width: 12px; flex-shrink: 0; }
+.group-name { font-size: 14px; font-weight: 500; flex: 1; color: var(--text); letter-spacing: 0.005em; }
+.group-name-input {
+  font-size: 14px; font-weight: 500; flex: 1; border: none;
+  background: transparent; color: var(--text); outline: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.group-count {
+  font-size: 11px; color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  background: rgba(0,0,0,0.05);
+  border-radius: 10px; padding: 1px 8px;
+}
+@media (prefers-color-scheme: dark) {
+  .group-count { background: rgba(255,255,255,0.07); }
+}
+.group-del { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px 4px; border-radius: 4px; opacity: 0; }
+.group-header:hover .group-del { opacity: 1; }
+.group-del:hover { color: var(--text); }
+
+/* ITEMS */
+.items-list { padding: 2px 16px 10px; }
+
+.item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  border-top: 0.5px solid var(--border);
+}
+.item-row:first-child { border-top: none; }
+
+.item-check {
+  margin-top: 3px; width: 15px; height: 15px;
+  cursor: pointer; flex-shrink: 0;
+  accent-color: var(--text-mid);
+}
+
+.prio-wrap { position: relative; display: flex; align-items: center; margin-top: 5px; flex-shrink: 0; }
+.priority-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  cursor: pointer; flex-shrink: 0;
+  transition: transform 0.1s;
+}
+.priority-dot:hover { transform: scale(1.4); }
+.p-high { background: var(--p-high); }
+.p-mid  { background: var(--p-mid); }
+.p-low  { background: var(--p-low); }
+.prio-tip {
+  display: none; position: absolute; left: 14px; top: -3px;
+  background: var(--surface); border: 0.5px solid var(--border-mid);
+  border-radius: 5px; font-size: 11px; color: var(--text-mid);
+  padding: 3px 8px; white-space: nowrap; z-index: 10; pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.prio-wrap:hover .prio-tip { display: block; }
+
+.item-text { flex: 1; font-size: 14px; color: var(--text); line-height: 1.55; word-break: break-word; }
+.item-text-input {
+  flex: 1; font-size: 14px; color: var(--text); line-height: 1.55;
+  border: none; background: transparent; outline: none;
+  font-family: 'DM Sans', sans-serif; resize: none; width: 100%;
+}
+.item-del {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 12px; cursor: pointer; padding: 0 2px; opacity: 0; margin-top: 3px;
+}
+.item-row:hover .item-del { opacity: 1; }
+.item-del:hover { color: var(--text); }
+
+/* ADD ROW */
+.add-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0 2px;
+  border-top: 0.5px solid var(--border);
+}
+.add-prio { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.prio-opt {
+  width: 8px; height: 8px; border-radius: 50%;
+  cursor: pointer; opacity: 0.3; transition: opacity 0.1s, transform 0.1s;
+  flex-shrink: 0;
+}
+.prio-opt.sel { opacity: 1; transform: scale(1.25); }
+.prio-opt:hover { opacity: 0.7; }
+.add-input {
+  flex: 1; font-size: 13px; color: var(--text-mid);
+  border: none; background: transparent; outline: none;
+  font-family: 'DM Sans', sans-serif;
+}
+.add-input::placeholder { color: var(--text-muted); }
+
+/* LOG */
+.log-section { margin-top: 2rem; }
+.log-toggle {
+  font-size: 12px; color: var(--text-muted); background: none; border: none;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  font-family: 'DM Mono', monospace;
+}
+.log-toggle:hover { color: var(--text-mid); }
+.log-list {
+  margin-top: 10px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+.log-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 16px; border-top: 0.5px solid var(--border);
+}
+.log-item:first-child { border-top: none; }
+.log-text { flex: 1; font-size: 13px; color: var(--text-muted); text-decoration: line-through; }
+.log-meta { font-size: 11px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.log-badge {
+  font-size: 11px; color: var(--text-muted);
+  background: var(--bg); border-radius: 4px; padding: 1px 6px;
+}
+.restore-btn {
+  font-size: 12px; color: var(--text-muted); background: none; border: none;
+  cursor: pointer; margin-top: 1px; font-family: 'DM Mono', monospace;
+}
+.restore-btn:hover { color: var(--text); }
+
+/* ADD GROUP MODAL */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35); z-index: 100;
+  align-items: center; justify-content: center;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  border: 0.5px solid var(--border-mid);
+  padding: 1.5rem; width: 320px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+.modal h2 { font-size: 15px; font-weight: 500; margin-bottom: 1rem; }
+.modal input {
+  width: 100%; font-size: 14px; padding: 8px 10px;
+  border: 0.5px solid var(--border-mid); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text); outline: none;
+  font-family: 'DM Sans', sans-serif; margin-bottom: 1rem;
+}
+.modal input:focus { border-color: rgba(0,0,0,0.3); }
+.modal-btns { display: flex; justify-content: flex-end; gap: 8px; }
+.modal-btns button {
+  font-size: 13px; padding: 7px 16px; border-radius: var(--radius-sm);
+  cursor: pointer; font-family: 'DM Sans', sans-serif; border: 0.5px solid var(--border-mid);
+}
+.btn-cancel { background: transparent; color: var(--text-mid); }
+.btn-confirm { background: var(--text); color: var(--bg); border-color: var(--text); }
+.btn-cancel:hover { background: var(--bg); }
+.btn-confirm:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>pendientes</h1>
+      <span class="total-badge" id="total-badge"></span>
+    </div>
+    <button class="btn-new-group" onclick="openModal()">+ nuevo grupo</button>
+  </div>
+  <div id="groups-container"></div>
+  <div class="log-section">
+    <button class="log-toggle" id="log-btn" onclick="toggleLog()">
+      ▶ completados (<span id="log-count">0</span>)
+    </button>
+    <div id="log-container" style="display:none;"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg" onclick="closeModalBg(event)">
+  <div class="modal">
+    <h2>nuevo grupo</h2>
+    <input id="modal-input" placeholder="nombre del grupo" onkeydown="modalKey(event)">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">cancelar</button>
+      <button class="btn-confirm" onclick="confirmGroup()">crear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'pendientes_v3';
+const COLORS = ['c0','c1','c2','c3','c4','c5','c6'];
+
+const defaultData = {
+  groups: [
+    { id:'g1', name:'Brasil Sky / NQ', color:'c0', collapsed:false, items:[
+      {id:'i1',text:'Conversar con NQ sobre estudios Brasil Sky',priority:'high'},
+      {id:'i2',text:'Brainstorming — sumar a presentación resultados',priority:'mid'}
+    ]},
+    { id:'g2', name:'Biblioteca', color:'c1', collapsed:false, items:[
+      {id:'i3',text:'Definir estructura formal de plataforma',priority:'mid'},
+      {id:'i4',text:'Read me con el maestro (estructura, lógica de árbol, nomenclatura)',priority:'low'},
+      {id:'i5',text:'Revisar temas de acceso — Luis',priority:'mid'},
+      {id:'i6',text:'Pedir Claude manual',priority:'low'}
+    ]},
+    { id:'g3', name:'Template Criteria', color:'c2', collapsed:false, items:[
+      {id:'i7',text:'Desarrollarlo esta semana',priority:'high'},
+      {id:'i8',text:'Revisar forma de desarrollar el diseño de PPT',priority:'mid'}
+    ]},
+    { id:'g4', name:'Transcripciones', color:'c3', collapsed:false, items:[
+      {id:'i9',text:'Desarrollar protocolo',priority:'mid'}
+    ]},
+    { id:'g5', name:'Airtable', color:'c4', collapsed:false, items:[
+      {id:'i10',text:'Backfill OA comercial',priority:'mid'},
+      {id:'i11',text:'Conectar con Claude para hacer ajustes',priority:'low'},
+      {id:'i12',text:'Resolver duplicación: propuestas en Airtable vs Biblioteca',priority:'mid'}
+    ]},
+    { id:'g6', name:'Pilotos', color:'c5', collapsed:false, items:[
+      {id:'i13',text:'Consolidar info de los pilotos (PROCESAR)',priority:'high'},
+      {id:'i14',text:'Activar piloto WhatsApp Wots',priority:'mid'}
+    ]},
+    { id:'g7', name:'BBDD clientes Criteria', color:'c6', collapsed:false, items:[
+      {id:'i15',text:'Normalizar nombres duplicados en Directorio de clientes',priority:'mid'},
+      {id:'i16',text:'Preparar Excel para llenar clientes e importar a Airtable',priority:'high'},
+      {id:'i17',text:'Empezar a llenar Directorio con contactos',priority:'low'}
+    ]}
+  ],
+  log: []
+};
+
+function load() {
+  try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : defaultData; }
+  catch(e) { return defaultData; }
+}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = load();
+let logVisible = false;
+let newPrio = {};
+
+function uid() { return 'x' + Math.random().toString(36).slice(2,9); }
+function plabel(p) { return p==='high'?'alta':p==='mid'?'media':'baja'; }
+function pnext(p) { return p==='high'?'mid':p==='mid'?'low':'high'; }
+function fdate(ts) { return new Date(ts).toLocaleDateString('es-CL',{day:'2-digit',month:'2-digit',year:'2-digit'}); }
+function total() { return state.groups.reduce((s,g)=>s+g.items.length,0); }
+
+function render() {
+  const t = total();
+  document.getElementById('total-badge').textContent = t + (t===1?' ítem':' ítems');
+  const cont = document.getElementById('groups-container');
+  cont.innerHTML = '';
+  state.groups.forEach((g, gi) => {
+    const c = g.color || COLORS[gi % COLORS.length];
+    const np = newPrio[g.id] || 'low';
+    const wrap = document.createElement('div');
+    wrap.className = 'group';
+    wrap.innerHTML = `
+      <div class="group-header gh-${c}" onclick="toggleGroup('${g.id}')">
+        <span class="group-toggle">${g.collapsed?'▶':'▼'}</span>
+        <span class="group-name" id="gn-${g.id}" ondblclick="editName('${g.id}',event)">${g.name}</span>
+        <span class="group-count">${g.items.length}</span>
+        <button class="group-del" onclick="delGroup('${g.id}',event)" title="eliminar grupo">✕</button>
+      </div>`;
+    if (!g.collapsed) {
+      const list = document.createElement('div');
+      list.className = 'items-list';
+      g.items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+          <input type="checkbox" class="item-check" onchange="completeItem('${g.id}','${item.id}')">
+          <div class="prio-wrap">
+            <span class="priority-dot p-${item.priority}" onclick="cyclePrio('${g.id}','${item.id}')"></span>
+            <span class="prio-tip">prioridad ${plabel(item.priority)} — clic para cambiar</span>
+          </div>
+          <span class="item-text" ondblclick="editItem('${g.id}','${item.id}',this)">${item.text}</span>
+          <button class="item-del" onclick="delItem('${g.id}','${item.id}')">✕</button>`;
+        list.appendChild(row);
+      });
+      const addRow = document.createElement('div');
+      addRow.className = 'add-row';
+      addRow.innerHTML = `
+        <div class="add-prio">
+          <span class="prio-opt p-high ${np==='high'?'sel':''}" onclick="setPrio('${g.id}','high')" title="alta"></span>
+          <span class="prio-opt p-mid  ${np==='mid'?'sel':''}"  onclick="setPrio('${g.id}','mid')"  title="media"></span>
+          <span class="prio-opt p-low  ${np==='low'?'sel':''}"  onclick="setPrio('${g.id}','low')"  title="baja"></span>
+        </div>
+        <input class="add-input" id="ai-${g.id}" placeholder="agregar pendiente..." onkeydown="addItem(event,'${g.id}')">`;
+      list.appendChild(addRow);
+      wrap.appendChild(list);
+    }
+    cont.appendChild(wrap);
+  });
+  renderLog();
+}
+
+function renderLog() {
+  document.getElementById('log-count').textContent = state.log.length;
+  const cont = document.getElementById('log-container');
+  cont.innerHTML = '';
+  if (!logVisible || !state.log.length) return;
+  const list = document.createElement('div');
+  list.className = 'log-list';
+  [...state.log].reverse().forEach(e => {
+    const row = document.createElement('div');
+    row.className = 'log-item';
+    row.innerHTML = `
+      <div style="flex:1;">
+        <div class="log-text">${e.text}</div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <span class="log-badge">${e.groupName}</span>
+          <span class="log-meta">${fdate(e.completedAt)}</span>
+        </div>
+      </div>
+      <button class="restore-btn" onclick="restore('${e.id}')" title="restaurar">↩</button>`;
+    list.appendChild(row);
+  });
+  cont.appendChild(list);
+}
+
+function toggleGroup(id) {
+  const g = state.groups.find(x=>x.id===id);
+  if(g) { g.collapsed=!g.collapsed; save(); render(); }
+}
+function toggleLog() {
+  logVisible = !logVisible;
+  const btn = document.getElementById('log-btn');
+  btn.innerHTML = `${logVisible?'▼':'▶'} completados (<span id="log-count">${state.log.length}</span>)`;
+  document.getElementById('log-container').style.display = logVisible?'block':'none';
+  renderLog();
+}
+function completeItem(gid, iid) {
+  const g = state.groups.find(x=>x.id===gid); if(!g) return;
+  const idx = g.items.findIndex(x=>x.id===iid); if(idx===-1) return;
+  const item = g.items[idx];
+  state.log.push({id:uid(),text:item.text,groupName:g.name,priority:item.priority,completedAt:Date.now()});
+  g.items.splice(idx,1);
+  save(); render();
+}
+function delItem(gid, iid) {
+  const g = state.groups.find(x=>x.id===gid);
+  if(g) { g.items=g.items.filter(x=>x.id!==iid); save(); render(); }
+}
+function delGroup(gid, e) {
+  e.stopPropagation();
+  if(!confirm('¿Eliminar este grupo?')) return;
+  state.groups=state.groups.filter(x=>x.id!==gid);
+  save(); render();
+}
+function cyclePrio(gid, iid) {
+  const g=state.groups.find(x=>x.id===gid); if(!g) return;
+  const item=g.items.find(x=>x.id===iid); if(!item) return;
+  item.priority=pnext(item.priority); save(); render();
+}
+function setPrio(gid, p) {
+  newPrio[gid]=p; render();
+  setTimeout(()=>{ const n=document.getElementById('ai-'+gid); if(n) n.focus(); },20);
+}
+function editItem(gid, iid, el) {
+  const g=state.groups.find(x=>x.id===gid);
+  const item=g&&g.items.find(x=>x.id===iid); if(!item) return;
+  const inp=document.createElement('textarea');
+  inp.className='item-text-input'; inp.value=item.text; inp.rows=1;
+  el.replaceWith(inp); inp.focus();
+  inp.addEventListener('blur',()=>{ item.text=inp.value.trim()||item.text; save(); render(); });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();inp.blur();} });
+}
+function editName(gid, e) {
+  e.stopPropagation();
+  const g=state.groups.find(x=>x.id===gid); if(!g) return;
+  const el=document.getElementById('gn-'+gid);
+  const inp=document.createElement('input');
+  inp.className='group-name-input'; inp.value=g.name;
+  el.replaceWith(inp); inp.focus(); inp.select();
+  inp.addEventListener('blur',()=>{ g.name=inp.value.trim()||g.name; save(); render(); });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') inp.blur(); });
+}
+function addItem(e, gid) {
+  if(e.key!=='Enter') return;
+  const inp=document.getElementById('ai-'+gid);
+  const text=inp.value.trim(); if(!text) return;
+  const g=state.groups.find(x=>x.id===gid); if(!g) return;
+  g.items.push({id:uid(),text,priority:newPrio[gid]||'low'});
+  save(); render();
+  setTimeout(()=>{ const n=document.getElementById('ai-'+gid); if(n) n.focus(); },30);
+}
+function restore(lid) {
+  const idx=state.log.findIndex(x=>x.id===lid); if(idx===-1) return;
+  const e=state.log[idx];
+  const g=state.groups.find(x=>x.name===e.groupName);
+  if(g) g.items.push({id:uid(),text:e.text,priority:e.priority});
+  else state.groups.push({id:uid(),name:e.groupName,color:COLORS[state.groups.length%COLORS.length],collapsed:false,items:[{id:uid(),text:e.text,priority:e.priority}]});
+  state.log.splice(idx,1);
+  save(); render();
+}
+
+function openModal() {
+  document.getElementById('modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('modal-input').focus(),50);
+}
+function closeModal() {
+  document.getElementById('modal-bg').classList.remove('open');
+  document.getElementById('modal-input').value='';
+}
+function closeModalBg(e) { if(e.target===document.getElementById('modal-bg')) closeModal(); }
+function modalKey(e) { if(e.key==='Enter') confirmGroup(); if(e.key==='Escape') closeModal(); }
+function confirmGroup() {
+  const name=document.getElementById('modal-input').value.trim();
+  if(!name) return;
+  state.groups.push({id:uid(),name,color:COLORS[state.groups.length%COLORS.length],collapsed:false,items:[]});
+  save(); render(); closeModal();
+}
+
+render();
+</script>
+</body>
+</html>
