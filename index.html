@@ -310,7 +310,7 @@ h1 {
 }
 .st-header {
   display: grid;
-  grid-template-columns: 1fr 80px 60px 90px 90px 36px;
+  grid-template-columns: 16px 1fr 80px 60px 90px 90px 36px;
   gap: 0; padding: 8px 14px;
   border-bottom: 1px solid var(--border);
   background: var(--bg);
@@ -321,10 +321,18 @@ h1 {
 }
 .st-row {
   display: grid;
-  grid-template-columns: 1fr 80px 60px 90px 90px 36px;
+  grid-template-columns: 16px 1fr 80px 60px 90px 90px 36px;
   gap: 0; padding: 9px 14px; align-items: center;
   border-top: 0.5px solid var(--border);
 }
+.st-drag {
+  font-size: 12px; color: var(--text-muted); cursor: grab;
+  opacity: 0; user-select: none; line-height: 1;
+}
+.st-row:hover .st-drag { opacity: 1; }
+.st-drag:active { cursor: grabbing; }
+.st-row.dragging { opacity: 0.4; }
+.st-row.drag-over { outline: 2px solid var(--border-mid); outline-offset: -2px; }
 .st-row:first-child { border-top: none; }
 .st-row:hover { background: var(--bg); }
 .st-cell { font-size: 13.5px; color: var(--text); }
@@ -375,7 +383,7 @@ h1 {
 .st-del:hover { color: var(--p-high); }
 .st-add-row {
   display: grid;
-  grid-template-columns: 1fr 80px 60px 90px 90px 36px;
+  grid-template-columns: 16px 1fr 80px 60px 90px 90px 36px;
   gap: 0; padding: 9px 14px; align-items: center;
   border-top: 1px solid var(--border);
   background: var(--bg);
@@ -472,6 +480,7 @@ h1 {
     </div>
     <div class="studies-table">
       <div class="st-header">
+        <span></span>
         <span>estudio</span>
         <span>proveedor</span>
         <span>servidor</span>
@@ -481,6 +490,7 @@ h1 {
       </div>
       <div id="studies-list"></div>
       <div class="st-add-row">
+        <span></span>
         <input class="st-add-input" id="st-new-name" placeholder="+ agregar estudio..." onkeydown="addStudy(event)">
         <input class="st-add-input" id="st-new-prov" placeholder="proveedor" onkeydown="addStudy(event)">
         <input class="st-add-input" id="st-new-srv" placeholder="s4" onkeydown="addStudy(event)">
@@ -594,7 +604,10 @@ function renderStudies() {
     row.className = 'st-row';
     const hasLink = s.sid && s.servidor;
     const link = hasLink ? `https://${s.servidor}.criteriaonline.cl/dashboard/cuotas/index.php?sid=${s.sid}` : '';
+    row.setAttribute('draggable', 'true');
+    row.dataset.sid2 = s.id;
     row.innerHTML = `
+      <span class="st-drag" title="arrastrar">⠿</span>
       <span class="st-cell">
         <input class="st-edit" value="${s.name}" onblur="updateStudy('${s.id}','name',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
       </span>
@@ -617,6 +630,40 @@ function renderStudies() {
         <button class="st-del" onclick="delStudy('${s.id}')">✕</button>
       </span>`;
     list.appendChild(row);
+  });
+  initStudyDrag();
+}
+
+function initStudyDrag() {
+  const list = document.getElementById('studies-list');
+  let dragSrc = null;
+  list.querySelectorAll('.st-row').forEach(el => {
+    el.addEventListener('dragstart', e => {
+      dragSrc = el;
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      list.querySelectorAll('.st-row').forEach(r => r.classList.remove('drag-over'));
+    });
+    el.addEventListener('dragover', e => {
+      e.preventDefault();
+      if(el !== dragSrc) {
+        list.querySelectorAll('.st-row').forEach(r => r.classList.remove('drag-over'));
+        el.classList.add('drag-over');
+      }
+    });
+    el.addEventListener('drop', e => {
+      e.preventDefault();
+      if(!dragSrc || dragSrc === el) return;
+      const fromIdx = studies.findIndex(s => s.id === dragSrc.dataset.sid2);
+      const toIdx   = studies.findIndex(s => s.id === el.dataset.sid2);
+      if(fromIdx === -1 || toIdx === -1) return;
+      const [moved] = studies.splice(fromIdx, 1);
+      studies.splice(toIdx, 0, moved);
+      saveStudies(); renderStudies();
+    });
   });
 }
 
