@@ -148,14 +148,15 @@ h1 {
 @media (prefers-color-scheme: dark) {
   .group-count { background: rgba(255,255,255,0.07); }
 }
-.group-del {
+.group-actions { display: flex; gap: 4px; opacity: 0; }
+.group-header:hover .group-actions { opacity: 1; }
+.group-action-btn {
   background: none; border: 0.5px solid transparent; cursor: pointer;
   color: var(--text-muted); font-size: 11px; padding: 3px 7px;
-  border-radius: 4px; opacity: 0; font-family: 'DM Sans', sans-serif;
-  white-space: nowrap;
+  border-radius: 4px; font-family: 'DM Sans', sans-serif; white-space: nowrap;
 }
-.group-header:hover .group-del { opacity: 1; }
-.group-del:hover { color: var(--p-high); border-color: rgba(216,64,64,0.25); background: rgba(216,64,64,0.06); }
+.group-action-btn:hover { color: var(--text-mid); border-color: var(--border-mid); background: var(--bg); }
+.group-action-btn.danger:hover { color: var(--p-high); border-color: rgba(216,64,64,0.25); background: rgba(216,64,64,0.06); }
 
 /* ITEMS */
 .items-list { padding: 2px 16px 10px; }
@@ -280,7 +281,116 @@ h1 {
 }
 .restore-btn:hover { color: var(--text); }
 
-/* INBOX */
+/* TABS */
+.tabs {
+  display: flex; gap: 2px; margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.tab-btn {
+  font-family: 'DM Mono', monospace; font-size: 13px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); padding: 8px 16px 10px;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 0.1s;
+}
+.tab-btn:hover { color: var(--text-mid); }
+.tab-btn.active { color: var(--text); border-bottom-color: var(--text); }
+
+/* STUDIES */
+.studies-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.studies-table {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.st-header {
+  display: grid;
+  grid-template-columns: 1fr 80px 60px 90px 90px 36px;
+  gap: 0; padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.st-header span {
+  font-size: 11px; color: var(--text-muted);
+  font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.st-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 60px 90px 90px 36px;
+  gap: 0; padding: 9px 14px; align-items: center;
+  border-top: 0.5px solid var(--border);
+}
+.st-row:first-child { border-top: none; }
+.st-row:hover { background: var(--bg); }
+.st-cell { font-size: 13.5px; color: var(--text); }
+.st-cell.muted { color: var(--text-muted); font-size: 13px; }
+.st-edit {
+  font-size: 13px; color: var(--text); background: transparent;
+  border: none; outline: none; font-family: 'DM Sans', sans-serif;
+  width: 100%; cursor: text;
+  border-bottom: 1px dashed transparent;
+}
+.st-edit:hover { border-bottom-color: var(--border-mid); }
+.st-edit:focus { border-bottom-color: var(--text-muted); }
+.st-sid {
+  font-family: 'DM Mono', monospace; font-size: 12px;
+  color: var(--text-mid); background: transparent;
+  border: none; outline: none; width: 100%; cursor: text;
+  border-bottom: 1px dashed transparent;
+}
+.st-sid:hover { border-bottom-color: var(--border-mid); }
+.st-sid:focus { border-bottom-color: var(--text-muted); }
+.st-sid::placeholder { color: var(--text-muted); }
+.st-link-btn {
+  background: none; border: 0.5px solid var(--border-mid);
+  border-radius: 5px; cursor: pointer; color: var(--text-mid);
+  font-size: 13px; padding: 3px 7px; font-family: 'DM Sans', sans-serif;
+}
+.st-link-btn:hover:not(:disabled) { background: var(--text); color: var(--bg); border-color: var(--text); }
+.st-link-btn:disabled { opacity: 0.3; cursor: default; }
+.status-badge {
+  font-size: 11px; font-family: 'DM Mono', monospace;
+  border-radius: 4px; padding: 2px 7px; cursor: pointer;
+  white-space: nowrap; border: 0.5px solid transparent;
+  user-select: none;
+}
+.s-campo  { background: #E2F5EE; color: #1A7A5A; border-color: #A8DCC8; }
+.s-sid    { background: #FAF0DA; color: #8A5A10; border-color: #E8CC80; }
+.s-cerrado{ background: var(--bg); color: var(--text-muted); border-color: var(--border-mid); }
+@media (prefers-color-scheme: dark) {
+  .s-campo  { background: #0E2E22; color: #4ECFA0; border-color: #1A5A40; }
+  .s-sid    { background: #2E2010; color: #E8A840; border-color: #5A4010; }
+  .s-cerrado{ background: var(--bg); color: var(--text-muted); border-color: var(--border-mid); }
+}
+.st-del {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 12px; cursor: pointer; opacity: 0; padding: 2px 4px;
+}
+.st-row:hover .st-del { opacity: 1; }
+.st-del:hover { color: var(--p-high); }
+.st-add-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 60px 90px 90px 36px;
+  gap: 0; padding: 9px 14px; align-items: center;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.st-add-input {
+  font-size: 13px; color: var(--text-muted); background: transparent;
+  border: none; outline: none; font-family: 'DM Sans', sans-serif; width: 100%;
+}
+.st-add-input::placeholder { color: var(--text-muted); }
+.st-add-btn {
+  font-size: 12px; color: var(--text-muted); background: none;
+  border: 0.5px solid var(--border-mid); border-radius: 4px;
+  padding: 3px 8px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+}
+.st-add-btn:hover { color: var(--text); border-color: var(--text-mid); }
 .inbox {
   background: var(--surface);
   border: 0.5px solid var(--border-mid);
@@ -326,33 +436,83 @@ h1 {
 <div class="app">
   <div class="topbar">
     <div class="topbar-left">
-      <h1>pendientes</h1>
+      <h1 id="app-title">pendientes</h1>
       <span class="total-badge" id="total-badge"></span>
     </div>
-    <button class="btn-new-group" onclick="addGroup()">+ nuevo grupo</button>
+    <button class="btn-new-group" id="topbar-action" onclick="addGroup()">+ nuevo grupo</button>
   </div>
 
-  <!-- BANDEJA DE ENTRADA -->
-  <div class="inbox">
-    <div class="inbox-label">entrada rápida</div>
-    <div class="inbox-input-row">
-      <input class="inbox-input" id="inbox-input" placeholder="escribe algo... (Enter para agregar)" onkeydown="addToInbox(event)">
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-pendientes" onclick="switchTab('pendientes')">pendientes</button>
+    <button class="tab-btn" id="tab-estudios" onclick="switchTab('estudios')">estudios</button>
+  </div>
+
+  <!-- PESTAÑA PENDIENTES -->
+  <div id="view-pendientes">
+    <div class="inbox">
+      <div class="inbox-label">entrada rápida</div>
+      <div class="inbox-input-row">
+        <input class="inbox-input" id="inbox-input" placeholder="escribe algo... (Enter para agregar)" onkeydown="addToInbox(event)">
+      </div>
+      <div class="inbox-items" id="inbox-items"></div>
     </div>
-    <div class="inbox-items" id="inbox-items"></div>
+    <div id="groups-container"></div>
+    <div class="log-section">
+      <button class="log-toggle" id="log-btn" onclick="toggleLog()">
+        ▶ completados (<span id="log-count">0</span>)
+      </button>
+      <div id="log-container" style="display:none;"></div>
+    </div>
   </div>
 
-  <div id="groups-container"></div>
-  <div class="log-section">
-    <button class="log-toggle" id="log-btn" onclick="toggleLog()">
-      ▶ completados (<span id="log-count">0</span>)
-    </button>
-    <div id="log-container" style="display:none;"></div>
+  <!-- PESTAÑA ESTUDIOS -->
+  <div id="view-estudios" style="display:none;">
+    <div class="studies-topbar">
+      <span class="total-badge" id="studies-count"></span>
+    </div>
+    <div class="studies-table">
+      <div class="st-header">
+        <span>estudio</span>
+        <span>proveedor</span>
+        <span>servidor</span>
+        <span>estado</span>
+        <span>SID</span>
+        <span></span>
+      </div>
+      <div id="studies-list"></div>
+      <div class="st-add-row">
+        <input class="st-add-input" id="st-new-name" placeholder="+ agregar estudio..." onkeydown="addStudy(event)">
+        <input class="st-add-input" id="st-new-prov" placeholder="proveedor" onkeydown="addStudy(event)">
+        <input class="st-add-input" id="st-new-srv" placeholder="s4" onkeydown="addStudy(event)">
+        <span></span>
+        <input class="st-add-input" id="st-new-sid" placeholder="SID" onkeydown="addStudy(event)">
+        <button class="st-add-btn" onclick="addStudyClick()">+</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 const STORAGE_KEY = 'pendientes_v3';
+const STUDIES_KEY = 'estudios_v1';
 const COLORS = ['c0','c1','c2','c3','c4','c5','c6'];
+
+const defaultStudies = [
+  {id:'e1', name:'Sky - CHI/PER', proveedor:'NQ', servidor:'s4', sid:'254425', status:'campo'},
+  {id:'e2', name:'Sky - PT',      proveedor:'NQ', servidor:'s4', sid:'917511', status:'campo'},
+  {id:'e3', name:'Sky - Arg',     proveedor:'NQ', servidor:'s4', sid:'911141', status:'campo'},
+  {id:'e4', name:'AC',            proveedor:'NQ', servidor:'s2', sid:'832553', status:'campo'},
+  {id:'e5', name:'AMC - NQ',      proveedor:'NQ', servidor:'s4', sid:'',       status:'sid'},
+  {id:'e6', name:'AMC - OW',      proveedor:'OW', servidor:'s4', sid:'',       status:'sid'},
+  {id:'e7', name:'Dis Arg/Mex - NQ', proveedor:'NQ', servidor:'d1', sid:'896858', status:'campo'},
+  {id:'e8', name:'Dis Brasil - NQ',  proveedor:'NQ', servidor:'d1', sid:'892833', status:'campo'},
+  {id:'e9', name:'Dis Arg/Mex - OW', proveedor:'OW', servidor:'d3', sid:'268734', status:'campo'},
+  {id:'e10',name:'Dis Brasil - OW',  proveedor:'OW', servidor:'d3', sid:'781897', status:'campo'},
+  {id:'e11',name:'Post test - NQ',   proveedor:'NQ', servidor:'s4', sid:'',       status:'sid'},
+  {id:'e12',name:'Post test - OW',   proveedor:'OW', servidor:'s4', sid:'',       status:'sid'},
+  {id:'e13',name:'uandes-jovenes',   proveedor:'NQ', servidor:'s4', sid:'',       status:'sid'},
+  {id:'e14',name:'uandes-adultos',   proveedor:'NQ', servidor:'s4', sid:'',       status:'sid'},
+];
 
 const defaultData = {
   groups: [
@@ -400,6 +560,93 @@ function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 let state = load();
 let logVisible = false;
 let newPrio = {};
+let currentTab = 'pendientes';
+
+function loadStudies() {
+  try { const r = localStorage.getItem(STUDIES_KEY); return r ? JSON.parse(r) : defaultStudies; }
+  catch(e) { return defaultStudies; }
+}
+function saveStudies() { localStorage.setItem(STUDIES_KEY, JSON.stringify(studies)); }
+let studies = loadStudies();
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('view-pendientes').style.display = tab==='pendientes'?'block':'none';
+  document.getElementById('view-estudios').style.display = tab==='estudios'?'block':'none';
+  document.getElementById('tab-pendientes').classList.toggle('active', tab==='pendientes');
+  document.getElementById('tab-estudios').classList.toggle('active', tab==='estudios');
+  document.getElementById('topbar-action').style.display = tab==='pendientes'?'':'none';
+  document.getElementById('total-badge').style.display = tab==='pendientes'?'':'none';
+  if(tab==='estudios') renderStudies();
+}
+
+const STATUS_CYCLE = ['campo','sid','cerrado'];
+const STATUS_LABEL = {campo:'en campo', sid:'pendiente SID', cerrado:'cerrado'};
+const STATUS_CLASS = {campo:'s-campo', sid:'s-sid', cerrado:'s-cerrado'};
+
+function renderStudies() {
+  const active = studies.filter(s=>s.status!=='cerrado').length;
+  document.getElementById('studies-count').textContent = `${active} activos · ${studies.length} total`;
+  const list = document.getElementById('studies-list');
+  list.innerHTML = '';
+  studies.forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'st-row';
+    const hasLink = s.sid && s.servidor;
+    const link = hasLink ? `https://${s.servidor}.criteriaonline.cl/dashboard/cuotas/index.php?sid=${s.sid}` : '';
+    row.innerHTML = `
+      <span class="st-cell">
+        <input class="st-edit" value="${s.name}" onblur="updateStudy('${s.id}','name',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+      </span>
+      <span class="st-cell muted">
+        <input class="st-edit" value="${s.proveedor}" onblur="updateStudy('${s.id}','proveedor',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+      </span>
+      <span class="st-cell muted">
+        <input class="st-edit" value="${s.servidor}" onblur="updateStudy('${s.id}','servidor',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+      </span>
+      <span class="st-cell">
+        <span class="status-badge ${STATUS_CLASS[s.status]}" onclick="cycleStatus('${s.id}')" title="clic para cambiar estado">
+          ${STATUS_LABEL[s.status]}
+        </span>
+      </span>
+      <span class="st-cell">
+        <input class="st-sid" value="${s.sid}" placeholder="—" onblur="updateStudy('${s.id}','sid',this.value)" onkeydown="if(event.key==='Enter')this.blur()">
+      </span>
+      <span class="st-cell" style="display:flex;gap:4px;align-items:center;">
+        <button class="st-link-btn" ${!hasLink?'disabled':''} onclick="openLink('${link}')" title="${link||'sin SID'}">→</button>
+        <button class="st-del" onclick="delStudy('${s.id}')">✕</button>
+      </span>`;
+    list.appendChild(row);
+  });
+}
+
+function updateStudy(id, field, val) {
+  const s = studies.find(x=>x.id===id); if(!s) return;
+  s[field] = val.trim();
+  saveStudies(); renderStudies();
+}
+function cycleStatus(id) {
+  const s = studies.find(x=>x.id===id); if(!s) return;
+  const idx = STATUS_CYCLE.indexOf(s.status);
+  s.status = STATUS_CYCLE[(idx+1) % STATUS_CYCLE.length];
+  saveStudies(); renderStudies();
+}
+function openLink(url) { if(url) window.open(url, '_blank'); }
+function delStudy(id) {
+  studies = studies.filter(x=>x.id!==id);
+  saveStudies(); renderStudies();
+}
+function addStudy(e) { if(e.key==='Enter') addStudyClick(); }
+function addStudyClick() {
+  const name = document.getElementById('st-new-name').value.trim(); if(!name) return;
+  const prov = document.getElementById('st-new-prov').value.trim();
+  const srv  = document.getElementById('st-new-srv').value.trim();
+  const sid  = document.getElementById('st-new-sid').value.trim();
+  studies.push({id:uid(), name, proveedor:prov, servidor:srv, sid, status:'sid'});
+  saveStudies(); renderStudies();
+  ['st-new-name','st-new-prov','st-new-srv','st-new-sid'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('st-new-name').focus();
+}
 
 function renderInbox() {
   const cont = document.getElementById('inbox-items');
@@ -466,7 +713,10 @@ function render() {
         <span class="group-toggle">${g.collapsed?'▶':'▼'}</span>
         <span class="group-name" id="gn-${g.id}" ondblclick="editName('${g.id}',event)">${g.name}</span>
         <span class="group-count">${g.items.length}</span>
-        <button class="group-del" onclick="delGroup('${g.id}',event)" title="eliminar grupo">✕</button>
+        <div class="group-actions" onclick="event.stopPropagation()">
+          <button class="group-action-btn" onclick="archiveGroup('${g.id}')" title="archivar grupo con sus ítems">✓ cerrar</button>
+          <button class="group-action-btn danger" onclick="delGroup('${g.id}',event)" title="eliminar grupo sin registro">✕</button>
+        </div>
       </div>`;
     if (!g.collapsed) {
       const list = document.createElement('div');
@@ -598,10 +848,22 @@ function delItem(gid, iid) {
   const g = state.groups.find(x=>x.id===gid);
   if(g) { g.items=g.items.filter(x=>x.id!==iid); save(); render(); }
 }
+function archiveGroup(gid) {
+  const g = state.groups.find(x=>x.id===gid); if(!g) return;
+  const ts = Date.now();
+  g.items.forEach(item => {
+    state.log.push({
+      id: uid(), text: item.text, groupName: g.name,
+      priority: item.priority, completedAt: ts, archived: true
+    });
+  });
+  state.groups = state.groups.filter(x=>x.id!==gid);
+  save(); render();
+}
 function delGroup(gid, e) {
   e.stopPropagation();
-  if(!confirm('¿Eliminar este grupo?')) return;
-  state.groups=state.groups.filter(x=>x.id!==gid);
+  if(!confirm('¿Eliminar este grupo? No quedará registro.')) return;
+  state.groups = state.groups.filter(x=>x.id!==gid);
   save(); render();
 }
 function cyclePrio(gid, iid) {
